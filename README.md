@@ -173,5 +173,7 @@ Facet's source code is also lovingly commented with [JSDoc](https://jsdoc.app/),
 > ⭐⭐⭐⭐⭐ "Anyone exploring web components really would do themselves a major favor giving this a solid look."
 > 
 > ⭐⭐⭐⭐⭐ "Facet is the first time I've looked at WebComponents and thought 'oh, I get this, I get what it's for'."
+>
+> ⭐⭐⭐⭐⭐ "This is exactly what I thought web components should be."
 
 <sup>* All reviews are real quotes from users, but are used here in jest and with permission.</sup>
