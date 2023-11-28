@@ -1,6 +1,8 @@
 # Facet
 Facet is a single-file web library that allows for the easy, declarative definition of [web components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components). By making use of `<template>` elements with special attributes, Facet makes it possible to define useful and effective web components with no Javascript boilerplate, so you can focus entirely on the structure and behavior of your component.
 
+> _Like what you see? [Consider buying me a coffee](https://ko-fi.com/kgscialdone)_ 💜 
+
 ## Installation
 You can download `facet.min.js` from this repository and reference it locally, or retrieve it directly from a CDN like JSDelivr. Facet will automatically detect component definitions in your page's HTML and convert them into web components.
 ```html
