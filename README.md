@@ -168,3 +168,10 @@ While Facet strives to never require you to write Javascript for any of its core
 | `facet.config.autoDiscover` | If false, skip automatic discovery of components/mixins on page load.
 
 Facet's source code is also lovingly commented with [JSDoc](https://jsdoc.app/), which keeps it lightweight and build-step free while still enabling Typescript users to rest easy about type safety when interacting with Facet's API.
+
+## Reviews
+> ⭐⭐⭐⭐⭐ "Anyone exploring web components really would do themselves a major favor giving this a solid look."
+> 
+> ⭐⭐⭐⭐⭐ "Facet is the first time I've looked at WebComponents and thought 'oh, I get this, I get what it's for'."
+
+<sup>* All reviews are real quotes from users, but are used here in jest and with permission.</sup>
