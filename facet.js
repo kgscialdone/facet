@@ -1,5 +1,5 @@
 // Facet v0.1.0
-// https://github.com/katrinakitten/facet
+// https://github.com/kgscialdone/facet
 
 /** Facet Javascript API */
 const facet = {
