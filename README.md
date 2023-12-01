@@ -39,7 +39,7 @@ In many cases, it's beneficial to be able to define attributes where a component
 ```html
 <template component="labeled-input">
   <style>
-    * { display: block; }
+    label, input { display: block; }
     label[required]::after { content: ' *'; color: red; }
   </style>
   <label inherit="name>for required"><slot>Input</slot></label>
