@@ -82,7 +82,7 @@ const facet = new function() {
 
     for(let template of root.querySelectorAll($`template[component]`))
       facet.defineComponent(template.getAttribute('component'), template, {
-        shadowMode: template.getAttribute('shadow') ?? 'closed',
+        shadowMode: template.getAttribute('shadow') ?? facet.config.defaultShadowMode,
         observeAttrs: template.getAttribute('observe')?.split(/\s+/g) ?? [],
         applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? []
       })
@@ -107,7 +107,11 @@ const facet = new function() {
 
     /** If true, automatically calls `facet.discoverDeclarativeComponents` on script load.
      *  (default: true, declarative: false if `libonly` attribute present on importing script) */
-    autoDiscover: document.currentScript && !document.currentScript.hasAttribute('libonly')
+    autoDiscover: document.currentScript && !document.currentScript.hasAttribute('libonly'),
+
+    /** Default shadow root mode for declaratively defined components.
+     *  (default: 'closed', declarative: value of `shadow` attribute on importing script) */
+    defaultShadowMode: document.currentScript?.getAttribute('shadow') ?? 'closed'
   }
 }
 
