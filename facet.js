@@ -85,28 +85,17 @@ const facet = new function() {
    */
   this.discoverDeclarativeComponents = function discoverDeclarativeComponents(root) {
     for(let template of root.querySelectorAll($`template[mixin]`))
-      facet.defineMixin(template.getAttribute('mixin'), template, {
+      this.defineMixin(template.getAttribute('mixin'), template, {
         applyGlobally: template.hasAttribute('global'),
         attachPosition: template.hasAttribute('prepend') ? 'prepend' : 'append'
       })
 
     for(let template of root.querySelectorAll($`template[component]`))
-      facet.defineComponent(template.getAttribute('component'), template, {
+      this.defineComponent(template.getAttribute('component'), template, {
         shadowMode: template.getAttribute('shadow') ?? facet.config.defaultShadowMode,
         observeAttrs: template.getAttribute('observe')?.split(/\s+/g) ?? [],
         applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? []
       })
-  }
-
-  /**
-   * Wrap an HTML string in a `<template>` element.
-   * @param {string} content The content.
-   * @returns {HTMLTemplateElement}
-   */
-  this.createTemplateElement = function createTemplateElement(content) {
-    const template = document.createElement('template')
-    template.innerHTML = content
-    return template
   }
 
   /** Configuration options */
