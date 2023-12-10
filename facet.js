@@ -24,7 +24,7 @@ const facet = new function() {
   
       connectedCallback() {
         const content = template.content.cloneNode(true)
-        for(let mixin of localMixins) content.append(mixin.content.cloneNode(true))
+        for(let mixin of localMixins) content[mixin.attachPosition](mixin.template.content.cloneNode(true))
   
         // Attach <script on> event handlers
         for(let script of content.querySelectorAll($`script[on]`)) {
@@ -70,10 +70,12 @@ const facet = new function() {
    * Define a mixin which can be appended after the content of other components.
    * @param {string} name The name used to reference this mixin.
    * @param {HTMLTemplateElement} template The `<template>` element containing the mixin's content.
-   * @param {boolean} applyGlobally If true, automatically applies this mixin to all components (default: false).
+   * @param {Object} options Mixin options
+   * @param {boolean} [options.applyGlobally=false] If true, automatically applies this mixin to all components (default: false).
+   * @param {'prepend'|'append'} [options.attachPosition='append'] Determines whether to prepend or append the mixin's content (default: 'append').
    */
-  this.defineMixin = function defineMixin(name, template, applyGlobally=false) {
-    mixins[name] = template
+  this.defineMixin = function defineMixin(name, template, { applyGlobally = false, attachPosition = 'append' }) {
+    mixins[name] = { template, attachPosition } 
     if(applyGlobally) globalMixins.push(name)
   }
 
@@ -83,7 +85,10 @@ const facet = new function() {
    */
   this.discoverDeclarativeComponents = function discoverDeclarativeComponents(root) {
     for(let template of root.querySelectorAll($`template[mixin]`))
-      facet.defineMixin(template.getAttribute('mixin'), template, template.hasAttribute('global'))
+      facet.defineMixin(template.getAttribute('mixin'), template, {
+        applyGlobally: template.hasAttribute('global'),
+        attachPosition: template.hasAttribute('prepend') ? 'prepend' : 'append'
+      })
 
     for(let template of root.querySelectorAll($`template[component]`))
       facet.defineComponent(template.getAttribute('component'), template, {
