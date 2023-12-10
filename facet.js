@@ -30,7 +30,12 @@ const facet = new function() {
         for(let script of content.querySelectorAll($`script[on]`)) {
           let parent = script.parentElement ?? this
           let handler = new Function('host', 'root', 'event', script.innerText).bind(parent, this, this.#root)
-          for(let event of script.getAttribute('on').split(/\s+/g)) parent.addEventListener(event, handler)
+          for(let event of script.getAttribute('on').split(/\s+/g)) 
+            parent.addEventListener(event, handler, {
+              once: script.hasAttribute('once'),
+              capture: script.hasAttribute('capture'),
+              ...(script.hasAttribute('passive') ? { passive: true } : {}) // Respect inconsistent browser defaults
+            })
           script.remove()
         }
   
