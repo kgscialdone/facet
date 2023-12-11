@@ -117,4 +117,4 @@ const facet = new function() {
 // Automatically discover Facet templates on load
 if(facet.config.autoDiscover) 
   (fn => document.readyState === 'interactive' ? fn() : document.addEventListener('DOMContentLoaded', fn, {once:true}))
-  (() => facet.discoverDeclarativeComponents(document.body))
+  (() => facet.discoverDeclarativeComponents(document))
