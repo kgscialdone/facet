@@ -112,9 +112,9 @@ const facet = new function() {
      *  (default: 'closed', declarative: value of `shadow` attribute on importing script) */
     defaultShadowMode: document.currentScript?.getAttribute('shadow') ?? 'closed'
   }
+
+  // Automatically discover Facet templates on load
+  ;(fn => document.readyState === 'interactive' ? fn() : document.addEventListener('DOMContentLoaded', fn, {once:true}))
+   (() => this.config.autoDiscover && this.discoverDeclarativeComponents(document))
 }
 
-// Automatically discover Facet templates on load
-if(facet.config.autoDiscover) 
-  (fn => document.readyState === 'interactive' ? fn() : document.addEventListener('DOMContentLoaded', fn, {once:true}))
-  (() => facet.discoverDeclarativeComponents(document))
