@@ -3,6 +3,7 @@
 /** Facet Javascript API */
 const facet = new function() {
   const mixins = {}, globalMixins = []
+  this.version = '0.1.0'
 
   /**
    * Define a Facet component. This is primarily for internal use; it can be called manually to define
