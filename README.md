@@ -6,7 +6,7 @@ Facet is a single-file web library that allows for the easy, declarative definit
 ## Installation
 You can download `facet.min.js` from this repository and reference it locally, or retrieve it directly from a CDN like JSDelivr. Facet will automatically detect component definitions in your page's HTML and convert them into web components.
 ```html
-<script src="https://cdn.jsdelivr.net/gh/kgscialdone/facet@0.1.0/facet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/kgscialdone/facet@0.1.1/facet.min.js"></script>
 ```
 
 ## Defining Components
@@ -38,10 +38,6 @@ You can also define a list of attributes to be observed by the component; any at
 In many cases, it's beneficial to be able to define attributes where a component is used, and have those attributes change the behavior of elements inside the component. Facet achieves this through inherited attributes, which make copying attributes deeper into your components quick and easy.
 ```html
 <template component="labeled-input">
-  <style>
-    label, input { display: block; }
-    label[required]::after { content: ' *'; color: red; }
-  </style>
   <label inherit="name>for required"><slot>Input</slot></label>
   <input inherit="name>id type value required placeholder">
 </template>
@@ -82,10 +78,10 @@ Since Facet components are defined entirely in HTML, you don't have the opportun
 Event handler scripts don't have to be at the top level of the component; they'll be attached to whatever their parent element is, allowing you to easily define complex behaviors for any part of your component.
 ```html
 <template component="click-alert">
-  <style>div { width: 100px; height: 100px; background: rebeccapurple; }</style>
-  <div> <!-- Click handler will be attached here!-->
+  <button> <!-- Click handler will be attached here!-->
+    Alert me!
     <script on="click">alert("I've been clicked!")</script>
-  </div>
+  </button>
 </template>
 ```
 
@@ -106,6 +102,8 @@ In addition, event handler scripts have access to a small handful of magic varia
 | `host`         | The host component.
 | `root`         | The host component's shadow root (or the host component if `shadow="none"`).
 | `event`        | The event that triggered the handler.
+
+You can also adjust how event handler scripts act with the `once`, `capture`, and `passive` attributes, which correspond to their respective equivalents in [`addEventListener`'s `options` parameter](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). If the attribute is present, the corresponding option will be set to `true`, otherwise it will follow the browser defaults.
 
 ## Mixins
 Facet also provides a mixin system in order to facilitate code reuse between similar components. Like components, mixins are defined with `<template>` elements, and their contents are appended to the shadow DOM of any component they're mixed into.
@@ -133,17 +131,35 @@ Mixins with the `global` attribute will be automatically applied to all componen
 </template>
 ```
 
+Mixins with the `prepend` attribute will prepend their contents instead of appending them.
+```html
+<template mixin="lorem" prepend>Lorem ipsum dolor sit amet...</template>
+
+<template component="prepended-mixins" mixin="lorem">
+  is a pretty weird choice of filler text, if you think about it.
+</template>
+```
+
 ## Configuration Options
 While Facet's defaults are designed to serve the majority of use cases out of the box, it does have a small handful of configuration options, which can be adjusted via attributes on the `<script>` tag that imports the Facet library.
 
 ### Namespacing
-Requires the additional `facet` attribute on all elements using Facet's magic attributes, both inside and outside of components.
+Requires a prefix on the `component` and `mixin` attributes to help avoid conflicts. The prefix defaults to `facet-` if no value is supplied to the attribute.
 ```html
+<!-- With default prefix -->
 <script src="facet.min.js" namespace></script>
 
-<template facet component="hello-world">
+<template facet-component="hello-world">
   <p>Hello, <slot>world</slot>!</p>
-  <script facet on="connect">console.log(this)</script>
+  <script on="connect">console.log(this)</script>
+</template>
+
+<!-- With custom prefix -->
+<script src="facet.min.js" namespace="fc-"></script>
+
+<template fc-component="hello-world">
+  <p>Hello, <slot>world</slot>!</p>
+  <script on="connect">console.log(this)</script>
 </template>
 ```
 
@@ -151,7 +167,13 @@ Requires the additional `facet` attribute on all elements using Facet's magic at
 Prevents the automatic discovery of component and mixin definitions, requiring you to manually call `facet.discoverDeclarativeComponents` yourself.
 ```html
 <script src="facet.min.js" libonly></script>
-<script defer>facet.discoverDeclarativeComponents(document.body)</script>
+<script defer>facet.discoverDeclarativeComponents(document)</script>
+```
+
+### Default Shadow Mode
+Changes the default shadow root mode for new components. Equivalent to the `shadow` attribute on individual components.
+```html
+<script src="facet.min.js" shadow="none"></script>
 ```
 
 ## Javascript API
@@ -160,14 +182,14 @@ While Facet strives to never require you to write Javascript for any of its core
 | Function | Description
 | :------- | :--
 | `facet.defineComponent(tagName, template, options)` | Define a new component.
-| `facet.defineMixin(name, template, applyGlobally)`  | Define a new mixin.
+| `facet.defineMixin(name, template, options)`        | Define a new mixin.
 | `facet.discoverDeclarativeComponents(root)`         | Find and define all components and mixins in a given parent element.
-| `facet.createTemplateElement(content)`              | Convenience method for creating `<template>` elements in Javascript.
 
 | Variable | Description
 | :------- | :--
-| `facet.config.useNamespace` | If true, require the `facet` attribute on all elements using Facet magic attributes.
-| `facet.config.autoDiscover` | If false, skip automatic discovery of components/mixins on page load.
+| `facet.config.namespace`         | The required namespace prefix for the `component` and `mixin` attributes.
+| `facet.config.autoDiscover`      | If false, skip automatic discovery of components/mixins on page load.
+| `facet.config.defaultShadowMode` | The default shadow root mode for new components.
 
 Facet's source code is also lovingly commented with [JSDoc](https://jsdoc.app/), which keeps it lightweight and build-step free while still enabling Typescript users to rest easy about type safety when interacting with Facet's API.
 
