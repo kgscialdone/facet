@@ -1,4 +1,5 @@
-# Facet
+<img src="https://facet.unmodernweb.com/assets/facet-light.png" style="width:300px" alt="Facet">
+
 Facet is a single-file web library that allows for the easy, declarative definition of [web components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components). By making use of `<template>` elements with special attributes, Facet makes it possible to define useful and effective web components with no Javascript boilerplate, so you can focus entirely on the structure and behavior of your component.
 
 > _Like what you see? [Consider buying me a coffee](https://ko-fi.com/kgscialdone)_ 💜 
