@@ -14,11 +14,16 @@ const facet = new function() {
    * @param {'open'|'closed'|'none'} [options.shadowMode='closed'] The shadow DOM mode to use (default: 'closed').
    * @param {string[]} [options.observeAttrs=[]] A list of attribute names to observe (default: []).
    * @param {string[]} [options.applyMixins=[]] A list of mixin names to include (default: []).
+   * @param {string} [options.extendsElement=] The tag name of the element type to extend if any (default: unset)
    */
-  this.defineComponent = function defineComponent(tagName, template, { shadowMode = 'closed', observeAttrs = [], applyMixins = [] }) {
-    const localMixins = new Set(applyMixins.concat(globalMixins).map(m=>mixins[m]))
+  this.defineComponent = function defineComponent(tagName, template, 
+    { shadowMode = 'closed', observeAttrs = [], applyMixins = [], extendsElement }
+  ) {
+    const localMixins    = new Set(applyMixins.concat(globalMixins).map(m=>mixins[m]))
+    const extendsConstr  = extendsElement ? document.createElement(extendsElement).constructor : HTMLElement
+    const extendsOptions = extendsElement ? { extends: extendsElement } : undefined
   
-    window.customElements.define(tagName, class FacetComponent extends HTMLElement {
+    window.customElements.define(tagName, class FacetComponent extends extendsConstr {
       static observedAttributes = observeAttrs
       #root = shadowMode !== 'none' ? this.attachShadow({ mode: shadowMode }) : this
   
@@ -63,7 +68,7 @@ const facet = new function() {
       adoptedCallback()      { this.#event('adopt') }
       attributeChangedCallback(name, oldValue, newValue) { this.#event('attributeChanged', { name, oldValue, newValue }) }
       #event(n, d={}) { this.dispatchEvent(new CustomEvent(n, { detail: { ...d, component: this } })) }
-    })
+    }, extendsOptions)
   }
 
   /**
@@ -94,7 +99,8 @@ const facet = new function() {
       this.defineComponent(template.getAttribute(`${facet.config.namespace}component`), template, {
         shadowMode: template.getAttribute('shadow')?.toLowerCase() ?? facet.config.defaultShadowMode,
         observeAttrs: template.getAttribute('observe')?.split(/\s+/g) ?? [],
-        applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? []
+        applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? [],
+        extendsElement: template.getAttribute('extends')
       })
   }
 
