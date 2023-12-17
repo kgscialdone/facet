@@ -15,17 +15,45 @@ const facet = new function() {
    * @param {string[]} [options.observeAttrs=[]] A list of attribute names to observe (default: []).
    * @param {string[]} [options.applyMixins=[]] A list of mixin names to include (default: []).
    * @param {string} [options.extendsElement=] The tag name of the element type to extend if any (default: unset)
+   * @param {boolean} [options.formAssoc=false] If true, treat this custom element as a form element (default: false)
    */
   this.defineComponent = function defineComponent(tagName, template, 
-    { shadowMode = 'closed', observeAttrs = [], applyMixins = [], extendsElement }
+    { shadowMode = 'closed', observeAttrs = [], applyMixins = [], extendsElement, formAssoc = false }
   ) {
     const localMixins    = new Set(applyMixins.concat(globalMixins).map(m=>mixins[m]))
     const extendsConstr  = extendsElement ? document.createElement(extendsElement).constructor : HTMLElement
     const extendsOptions = extendsElement ? { extends: extendsElement } : undefined
-  
+    
     window.customElements.define(tagName, class FacetComponent extends extendsConstr {
       static observedAttributes = observeAttrs
+      static formAssociated = formAssoc
       #root = shadowMode !== 'none' ? this.attachShadow({ mode: shadowMode }) : this
+
+      constructor() {
+        super()
+        
+        // Setup form associated mode
+        // This whole section is a mega kludge, but there isn't really a better way
+        if(formAssoc) {
+          let internals = this.attachInternals(), value
+          Object.defineProperties(this, {
+            internals: { value: internals, writable: false },
+            value: { get: () => value, set: newValue => internals.setFormValue(value = newValue) },
+
+            name: { get: () => this.getAttribute('name') },
+            form: { get: () => internals.form },
+            labels: { get: () => internals.labels },
+            validity: { get: () => internals.validity },
+            validationMessage: { get: () => internals.validationMessage },
+            willValidate: { get: () => internals.willValidate },
+
+            setFormValue: { value: (n,s) => internals.setFormValue(value = n, s), writable: false },
+            setValidity: { value: internals.setValidity.bind(internals), writable: false },
+            checkValidity: { value: internals.checkValidity.bind(internals), writable: false },
+            reportValidity: { value: internals.reportValidity.bind(internals), writable: false }
+          })
+        }
+      }
   
       connectedCallback() {
         const content = template.content.cloneNode(true)
@@ -59,14 +87,20 @@ const facet = new function() {
           }
           el.removeAttribute('inherit')
         }
-  
+
+        if(formAssoc) this.value = this.getAttribute('value')
         this.#root.append(content)
         this.#event('connect')
       }
   
-      disconnectedCallback() { this.#event('disconnect') }
-      adoptedCallback()      { this.#event('adopt') }
+      disconnectedCallback()                             { this.#event('disconnect') }
+      adoptedCallback()                                  { this.#event('adopt') }
       attributeChangedCallback(name, oldValue, newValue) { this.#event('attributeChanged', { name, oldValue, newValue }) }
+      formAssociatedCallback(form)                       { this.#event('formAssociate', { form }) }
+      formDisabledCallback(disabled)                     { this.#event('formDisable', { disabled }) }
+      formResetCallback()                                { this.#event('formReset') }
+      formStateRestoreCallback(state, mode)              { this.#event('formStateRestore', { state, mode }) }
+
       #event(n, d={}) { this.dispatchEvent(new CustomEvent(n, { detail: { ...d, component: this } })) }
     }, extendsOptions)
   }
@@ -100,7 +134,8 @@ const facet = new function() {
         shadowMode: template.getAttribute('shadow')?.toLowerCase() ?? facet.config.defaultShadowMode,
         observeAttrs: template.getAttribute('observe')?.split(/\s+/g) ?? [],
         applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? [],
-        extendsElement: template.getAttribute('extends')
+        extendsElement: template.getAttribute('extends'),
+        formAssoc: template.hasAttribute('forminput')
       })
   }
 
