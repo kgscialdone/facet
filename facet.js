@@ -14,11 +14,12 @@ const facet = new function() {
    * @param {'open'|'closed'|'none'} [options.shadowMode='closed'] The shadow DOM mode to use (default: 'closed').
    * @param {string[]} [options.observeAttrs=[]] A list of attribute names to observe (default: []).
    * @param {string[]} [options.applyMixins=[]] A list of mixin names to include (default: []).
+   * @param {{[name:string]:(host:FacetComponent,root:(FacetComponent|ShadowRoot),value:string)=>string}} [options.localFilters={}] An object containing local filter functions (default: {}).
    * @param {string} [options.extendsElement=] The tag name of the element type to extend if any (default: unset)
    * @param {boolean} [options.formAssoc=false] If true, treat this custom element as a form element (default: false)
    */
   this.defineComponent = function defineComponent(tagName, template, 
-    { shadowMode = 'closed', observeAttrs = [], applyMixins = [], extendsElement, formAssoc = false }
+    { shadowMode = 'closed', observeAttrs = [], applyMixins = [], localFilters = {}, extendsElement, formAssoc = false }
   ) {
     const localMixins    = new Set(applyMixins.concat(globalMixins).map(m=>mixins[m]))
     const extendsConstr  = extendsElement ? document.createElement(extendsElement).constructor : HTMLElement
@@ -28,6 +29,7 @@ const facet = new function() {
       static observedAttributes = observeAttrs
       static formAssociated = formAssoc
       #root = shadowMode !== 'none' ? this.attachShadow({ mode: shadowMode }) : this
+      #localFilters = {...localFilters}
 
       constructor() {
         super()
@@ -57,7 +59,10 @@ const facet = new function() {
   
       connectedCallback() {
         const content = template.content.cloneNode(true)
-        for(let mixin of localMixins) content[mixin.attachPosition](mixin.template.content.cloneNode(true))
+        for(let mixin of localMixins) {
+          content[mixin.attachPosition](mixin.template.content.cloneNode(true))
+          Object.assign(this.#localFilters, mixin.localFilters)
+        }
   
         // Attach <script on> event handlers
         for(let script of content.querySelectorAll('script[on]')) {
@@ -76,7 +81,7 @@ const facet = new function() {
         for(let el of content.querySelectorAll('[inherit]')) {
           for(let attr of el.getAttribute('inherit').split(/\s+/g)) {
             const [,ogname,rename,fn] = attr.match(/^([^\/>"'=]+)(?:>([^\/>"'=]+))?(?:\/(\w+))?$/)
-            const cv = this.getAttribute(ogname), filter = window[fn]
+            const cv = this.getAttribute(ogname), filter = this.#localFilters[fn]?.bind(this, this, this.#root) ?? window[fn]
             if(cv) el.setAttribute(rename ?? ogname, filter?.(cv, undefined, el, this) ?? cv)
 
             if(observeAttrs.includes(ogname))
@@ -112,9 +117,12 @@ const facet = new function() {
    * @param {Object} options Mixin options
    * @param {boolean} [options.applyGlobally=false] If true, automatically applies this mixin to all components (default: false).
    * @param {'prepend'|'append'} [options.attachPosition='append'] Determines whether to prepend or append the mixin's content (default: 'append').
+   * @param {{[name:string]:(host:FacetComponent,root:(FacetComponent|ShadowRoot),value:string)=>string}} [options.localFilters={}] An object containing local filter functions (default: {}).
    */
-  this.defineMixin = function defineMixin(name, template, { applyGlobally = false, attachPosition = 'append' }) {
-    mixins[name] = { template, attachPosition } 
+  this.defineMixin = function defineMixin(name, template, 
+    { applyGlobally = false, attachPosition = 'append', localFilters = {} }
+  ) {
+    mixins[name] = { template, attachPosition, localFilters } 
     if(applyGlobally) globalMixins.push(name)
   }
 
@@ -126,7 +134,8 @@ const facet = new function() {
     for(let template of root.querySelectorAll(`template[${facet.config.namespace}mixin]`))
       this.defineMixin(template.getAttribute(`${facet.config.namespace}mixin`), template, {
         applyGlobally: template.hasAttribute('global'),
-        attachPosition: template.hasAttribute('prepend') ? 'prepend' : 'append'
+        attachPosition: template.hasAttribute('prepend') ? 'prepend' : 'append',
+        localFilters: discoverLocalFilters(template),
       })
 
     for(let template of root.querySelectorAll(`template[${facet.config.namespace}component]`))
@@ -134,9 +143,16 @@ const facet = new function() {
         shadowMode: template.getAttribute('shadow')?.toLowerCase() ?? facet.config.defaultShadowMode,
         observeAttrs: template.getAttribute('observe')?.split(/\s+/g) ?? [],
         applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? [],
+        localFilters: discoverLocalFilters(template),
         extendsElement: template.getAttribute('extends'),
-        formAssoc: template.hasAttribute('forminput')
+        formAssoc: template.hasAttribute('forminput'),
       })
+  }
+
+  function discoverLocalFilters(template) {
+    return [...template.content.querySelectorAll('script[filter]')]
+      .map(script => { script.remove(); return [script.getAttribute('filter'), new Function('host', 'root', 'value', script.innerText)] })
+      .reduce((a,[k,v]) => { a[k] = v; return a }, {})
   }
 
   /** Configuration options */
