@@ -131,15 +131,25 @@ const facet = new function() {
    * @param {ParentNode} root The parent element to discover inside.
    */
   this.discoverDeclarativeComponents = function discoverDeclarativeComponents(root) {
-    for(let template of root.querySelectorAll(`template[${facet.config.namespace}mixin]`))
-      this.defineMixin(template.getAttribute(`${facet.config.namespace}mixin`), template, {
+    let mixinSelector = `template[${facet.config.namespace}mixin]:not([defined])`
+    let cmpntSelector = `template[${facet.config.namespace}component]:not([defined])`
+
+    if(root.matches?.(mixinSelector)) processMixin(root)
+    if(root.matches?.(cmpntSelector)) processComponent(root)
+    for(let template of root.querySelectorAll(mixinSelector)) processMixin(template)
+    for(let template of root.querySelectorAll(cmpntSelector)) processComponent(template)
+
+    function processMixin(template) {
+      template.setAttribute('defined',true)
+      facet.defineMixin(template.getAttribute(`${facet.config.namespace}mixin`), template, {
         applyGlobally: template.hasAttribute('global'),
         attachPosition: template.hasAttribute('prepend') ? 'prepend' : 'append',
         localFilters: discoverLocalFilters(template),
       })
-
-    for(let template of root.querySelectorAll(`template[${facet.config.namespace}component]`))
-      this.defineComponent(template.getAttribute(`${facet.config.namespace}component`), template, {
+    }
+    function processComponent(template) {
+      template.setAttribute('defined',true)
+      facet.defineComponent(template.getAttribute(`${facet.config.namespace}component`), template, {
         shadowMode: template.getAttribute('shadow')?.toLowerCase() ?? facet.config.defaultShadowMode,
         observeAttrs: template.getAttribute('observe')?.split(/\s+/g) ?? [],
         applyMixins: template.getAttribute('mixins')?.split(/\s+/g) ?? [],
@@ -147,12 +157,12 @@ const facet = new function() {
         extendsElement: template.getAttribute('extends'),
         formAssoc: template.hasAttribute('forminput'),
       })
-  }
-
-  function discoverLocalFilters(template) {
-    return [...template.content.querySelectorAll('script[filter]')]
-      .map(script => { script.remove(); return [script.getAttribute('filter'), new Function('host', 'root', 'value', script.innerText)] })
-      .reduce((a,[k,v]) => { a[k] = v; return a }, {})
+    }
+    function discoverLocalFilters(template) {
+      return [...template.content.querySelectorAll('script[filter]')]
+        .map(script => { script.remove(); return [script.getAttribute('filter'), new Function('host', 'root', 'value', script.innerText)] })
+        .reduce((a,[k,v]) => { a[k] = v; return a }, {})
+    }
   }
 
   /** Configuration options */
