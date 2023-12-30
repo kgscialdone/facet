@@ -20,7 +20,7 @@ const facet = new function() {
   this.defineComponent = function defineComponent(tagName, template, 
     { shadowMode = 'closed', observeAttrs = [], applyMixins = [], localFilters = {}, extendsElement, formAssoc = false }
   ) {
-    const localMixins    = this.mixins.filter(m => m.applyGlobally || applyMixins.includes(m.name))
+    const localMixins    = Object.values(this.mixins).filter(m => m.applyGlobally || applyMixins.includes(m.name))
     const extendsConstr  = extendsElement ? document.createElement(extendsElement).constructor : HTMLElement
     const extendsOptions = extendsElement ? { extends: extendsElement } : undefined
     
@@ -119,7 +119,7 @@ const facet = new function() {
    * @param {{[name:string]:(host:FacetComponent,root:(FacetComponent|ShadowRoot),value:string)=>string}} [options.localFilters={}] An object containing local filter functions (default: {}).
    */
   this.defineMixin = function defineMixin(name, template, options) {
-    (this.mixins ??= []).push({ ...options, name, template })
+    (this.mixins ??= {})[name] = { ...options, name, template }
   }
 
   /**
