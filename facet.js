@@ -2,7 +2,6 @@
 
 /** Facet Javascript API */
 const facet = new function() {
-  const mixins = {}, globalMixins = []
   this.version = '0.1.1'
 
   /**
@@ -21,7 +20,7 @@ const facet = new function() {
   this.defineComponent = function defineComponent(tagName, template, 
     { shadowMode = 'closed', observeAttrs = [], applyMixins = [], localFilters = {}, extendsElement, formAssoc = false }
   ) {
-    const localMixins    = new Set(applyMixins.concat(globalMixins).map(m=>mixins[m]))
+    const localMixins    = this.mixins.filter(m => m.applyGlobally || applyMixins.includes(m.name))
     const extendsConstr  = extendsElement ? document.createElement(extendsElement).constructor : HTMLElement
     const extendsOptions = extendsElement ? { extends: extendsElement } : undefined
     
@@ -119,11 +118,8 @@ const facet = new function() {
    * @param {'prepend'|'append'} [options.attachPosition='append'] Determines whether to prepend or append the mixin's content (default: 'append').
    * @param {{[name:string]:(host:FacetComponent,root:(FacetComponent|ShadowRoot),value:string)=>string}} [options.localFilters={}] An object containing local filter functions (default: {}).
    */
-  this.defineMixin = function defineMixin(name, template, 
-    { applyGlobally = false, attachPosition = 'append', localFilters = {} }
-  ) {
-    mixins[name] = { template, attachPosition, localFilters } 
-    if(applyGlobally) globalMixins.push(name)
+  this.defineMixin = function defineMixin(name, template, options) {
+    (this.mixins ??= []).push({ ...options, name, template })
   }
 
   /**
