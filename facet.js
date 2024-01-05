@@ -178,6 +178,7 @@ const facet = new function() {
   }
 
   // Automatically discover Facet templates on load
-  setTimeout(() => this.config.autoDiscover && this.discoverDeclarativeComponents(document))
+  ;(fn => document.readyState === 'interactive' ? fn() : document.addEventListener('DOMContentLoaded', fn, {once:true}))
+   (() => this.config.autoDiscover && this.discoverDeclarativeComponents(document))
 }
 
