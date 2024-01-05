@@ -20,7 +20,6 @@ const facet = new function() {
   this.defineComponent = function defineComponent(tagName, template, 
     { shadowMode = 'closed', observeAttrs = [], applyMixins = [], localFilters = {}, extendsElement, formAssoc = false }
   ) {
-    const localMixins    = Object.values(this.mixins).filter(m => m.applyGlobally || applyMixins.includes(m.name))
     const extendsConstr  = extendsElement ? document.createElement(extendsElement).constructor : HTMLElement
     const extendsOptions = extendsElement ? { extends: extendsElement } : undefined
     
@@ -58,7 +57,8 @@ const facet = new function() {
   
       connectedCallback() {
         const content = template.content.cloneNode(true)
-        for(let mixin of localMixins) {
+        const mixins = Object.values(facet.mixins).filter(m => m.applyGlobally || applyMixins.includes(m.name))
+        for(let mixin of mixins) {
           content[mixin.attachPosition](mixin.template.content.cloneNode(true))
           Object.assign(this.#localFilters, mixin.localFilters)
         }
