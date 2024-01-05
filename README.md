@@ -7,7 +7,7 @@ Facet is a single-file web library that allows for the easy, declarative definit
 ## Installation
 You can download `facet.min.js` from this repository and reference it locally, or retrieve it directly from a CDN like JSDelivr. Facet will automatically detect component definitions in your page's HTML and convert them into web components.
 ```html
-<script src="https://cdn.jsdelivr.net/gh/kgscialdone/facet@0.1.1/facet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/kgscialdone/facet@0.1.2/facet.min.js"></script>
 ```
 
 ## Defining Components
@@ -55,6 +55,12 @@ When inheriting attributes, you can use them as-is, rename them, filter them thr
 
 <script>
   function uppercase(string) { return string.toUpperCase() }
+</script>
+
+<!-- Or define your filter functions inside your component like this! -->
+<!-- They'll be scoped to just that component and won't conflict with anything else. -->
+<script filter="uppercase">
+  return value.toUpperCase()
 </script>
 ```
 
@@ -141,6 +147,28 @@ Mixins with the `prepend` attribute will prepend their contents instead of appen
 </template>
 ```
 
+## Advanced Features
+You can define [customized built-in elements](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#customized_built-in_elements) with the `extends` attribute.
+```html
+<template component="lorem-ipsum" extends="p">
+  Lorem ipsum dolor sit amet... <slot></slot>
+</template>
+
+<p is="lorem-ipsum">is a pretty weird choice of filler text, if you think about it.</p>
+```
+
+You can define [form-associated custom elements](https://web.dev/articles/more-capable-form-controls) with the `forminput` attribute.
+```html
+<template component="inc-dec" forminput>
+  <script on="connect" once>host.innerText = host.value</script>
+  <button>+ <script on="click">host.innerText = ++host.value</script></button>
+  <span><slot></slot></span>
+  <button>- <script on="click">host.innerText = --host.value</script></button>
+</template>
+
+<inc-dec value="0"></inc-dec>
+```
+
 ## Configuration Options
 While Facet's defaults are designed to serve the majority of use cases out of the box, it does have a small handful of configuration options, which can be adjusted via attributes on the `<script>` tag that imports the Facet library.
 
@@ -191,6 +219,7 @@ While Facet strives to never require you to write Javascript for any of its core
 | `facet.config.namespace`         | The required namespace prefix for the `component` and `mixin` attributes.
 | `facet.config.autoDiscover`      | If false, skip automatic discovery of components/mixins on page load.
 | `facet.config.defaultShadowMode` | The default shadow root mode for new components.
+| `facet.mixins`                   | Information about all currently defined mixins.
 
 Facet's source code is also lovingly commented with [JSDoc](https://jsdoc.app/), which keeps it lightweight and build-step free while still enabling Typescript users to rest easy about type safety when interacting with Facet's API.
 
