@@ -1,8 +1,8 @@
-// Facet v0.1.1 | https://github.com/kgscialdone/facet
+// Facet v0.1.2 | https://github.com/kgscialdone/facet
 
 /** Facet Javascript API */
 const facet = new function() {
-  this.version = '0.1.1'
+  this.version = '0.1.2'
 
   /**
    * Define a Facet component. This is primarily for internal use; it can be called manually to define
