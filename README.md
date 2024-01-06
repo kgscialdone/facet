@@ -7,7 +7,7 @@ Facet is a single-file web library that allows for the easy, declarative definit
 ## Installation
 You can download `facet.min.js` from this repository and reference it locally, or retrieve it directly from a CDN like JSDelivr. Facet will automatically detect component definitions in your page's HTML and convert them into web components.
 ```html
-<script src="https://cdn.jsdelivr.net/gh/kgscialdone/facet@0.1.2/facet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/kgscialdone/facet@0.1.2a/facet.min.js"></script>
 ```
 
 ## Defining Components

@@ -1,8 +1,8 @@
-// Facet v0.1.2 | https://github.com/kgscialdone/facet
+// Facet v0.1.2a | https://github.com/kgscialdone/facet
 
 /** Facet Javascript API */
 const facet = new function() {
-  this.version = '0.1.2'
+  this.version = '0.1.2a'
 
   /**
    * Define a Facet component. This is primarily for internal use; it can be called manually to define
@@ -119,7 +119,7 @@ const facet = new function() {
    * @param {{[name:string]:(host:FacetComponent,root:(FacetComponent|ShadowRoot),value:string)=>string}} [options.localFilters={}] An object containing local filter functions (default: {}).
    */
   this.defineMixin = function defineMixin(name, template, options) {
-    (this.mixins ??= {})[name] = { ...options, name, template }
+    this.mixins[name] = { ...options, name, template }
   }
 
   /**
@@ -161,6 +161,8 @@ const facet = new function() {
     }
   }
 
+  /** Defined mixins */
+  this.mixins = {}
   /** Configuration options */
   this.config = {
     /** If set, prepends a namespace to the `component` and `mixin` magic attributes to reduce conflicts.
